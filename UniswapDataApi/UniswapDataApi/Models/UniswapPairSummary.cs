@@ -3,9 +3,9 @@
     public class UniswapPairSummary
     {
         public string Pair { get; set; }
-        public decimal Price { get; set; }
-        public decimal EthLiquidity { get; set; }
-        public decimal TokenLiquidity { get; set; }
-        public decimal Volume24HrEth { get; set; }
+        public string Price { get; set; }
+        public string EthLiquidity { get; set; }
+        public string TokenLiquidity { get; set; }
+        public string Volume24HrEth { get; set; }
     }
 }

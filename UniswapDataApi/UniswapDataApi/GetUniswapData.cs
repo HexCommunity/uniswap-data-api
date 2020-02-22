@@ -21,6 +21,8 @@ namespace UniswapDataApi
         private readonly HttpClient _client;
         private readonly string _blocklyticsApiKey;
 
+        private const string DecimalFormatter = "0.##########";
+
         public GetUniswapData(IHttpClientFactory httpClientFactory, IConfiguration config)
         {
             _client = httpClientFactory.CreateClient();
@@ -40,15 +42,16 @@ namespace UniswapDataApi
                 var dtoString = await response.Content.ReadAsStringAsync();
                 var blocklyticsPairs = JsonConvert.DeserializeObject<List<BlocklyticsUniswapPairsDTO>>(dtoString);
                 var pairs = blocklyticsPairs
-                    .Where(bPair => bPair.Price != null && !bPair.EthVolume.Equals(0))
+                    .Where(bPair => bPair.Price != null && bPair.Price.ToString() != "0")
                     .Select(bPair => new UniswapPairSummary
                     {
                         Pair = $"{bPair.TokenSymbol}/ETH",
-                        Price = ConvertDoubleToDecimal(1 / (double)bPair.Price),
-                        EthLiquidity = ConvertDoubleToDecimal(bPair.EthLiquidity),
-                        TokenLiquidity = ConvertDoubleToDecimal(bPair.TokenLiquidity),
-                        Volume24HrEth = ConvertDoubleToDecimal(bPair.EthVolume)
-                    });
+                        Price = (1 / (double)bPair.Price).ToString(DecimalFormatter),
+                        EthLiquidity = bPair.EthLiquidity.ToString(DecimalFormatter),
+                        TokenLiquidity = bPair.TokenLiquidity.ToString(DecimalFormatter),
+                        Volume24HrEth = bPair.EthVolume.ToString(DecimalFormatter)
+                    })
+                    .Where(IsActive);
                 return new OkObjectResult(pairs);
             }
             catch (Exception e)
@@ -58,6 +61,7 @@ namespace UniswapDataApi
             }
         }
 
-        private static decimal ConvertDoubleToDecimal(double value) => Math.Round(Convert.ToDecimal(value), 10, MidpointRounding.ToNegativeInfinity);
+        private static bool IsActive(UniswapPairSummary pair) => pair.Price != "0" && pair.EthLiquidity != "0" &&
+                                                                 pair.TokenLiquidity != "0" && pair.Volume24HrEth != "0";
     }
 }
