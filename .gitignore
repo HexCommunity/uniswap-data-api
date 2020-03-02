@@ -2,5 +2,5 @@
 # This .gitignore file was automatically created by Microsoft(R) Visual Studio.
 ################################################################################
 
-/UniswapDataApi/.vs/UniswapDataApi
-/UniswapDataApi/UniswapDataApi/Properties/PublishProfiles
+/.vs/UniswapDataApi
+/UniswapDataApi/Properties/PublishProfiles
