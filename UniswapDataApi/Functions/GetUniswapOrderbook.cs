@@ -10,6 +10,7 @@ using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using UniswapDataApi.Interfaces;
 using UniswapDataApi.Models;
 
 namespace UniswapDataApi.Functions
@@ -17,17 +18,17 @@ namespace UniswapDataApi.Functions
     public class GetUniswapOrderBook
     {
         private readonly HttpClient _client;
+        private readonly IOrderBookFactory _orderBookFactory;
         private readonly int _cacheExpirationSecs;
         private readonly string _getUniswapDataUri;
-
-        private const string DecimalFormatter = "0.##########";
 
         private static DateTime _lastUpdated = DateTime.MinValue;
         private static IDictionary<string, OrderBook> _orderBooks = new Dictionary<string, OrderBook>();
 
-        public GetUniswapOrderBook(IHttpClientFactory httpClientFactory, IConfiguration config)
+        public GetUniswapOrderBook(IHttpClientFactory httpClientFactory, IOrderBookFactory orderBookFactory, IConfiguration config)
         {
             _client = httpClientFactory.CreateClient();
+            _orderBookFactory = orderBookFactory;
             _cacheExpirationSecs = int.TryParse(config["CacheExpirationSecs"], out var cacheExpSecs)
                 ? cacheExpSecs
                 : 30;
@@ -70,79 +71,11 @@ namespace UniswapDataApi.Functions
                 if (orderBooks.ContainsKey(tokenSymbol))
                     continue;
 
-                orderBooks.Add(tokenSymbol, PairToOrderBook(pair));
+                orderBooks.Add(tokenSymbol, _orderBookFactory.CreateOrderBook(pair));
             }
 
             _orderBooks = orderBooks;
             _lastUpdated = DateTime.UtcNow;
-        }
-
-        private static OrderBook PairToOrderBook(UniswapPair pair)
-        {
-            var ethLiquidity = double.Parse(pair.EthLiquidity);
-            var tokenLiquidity = double.Parse(pair.TokenLiquidity);
-
-            return new OrderBook
-            {
-                Bids = GetBids(ethLiquidity, tokenLiquidity),
-                Asks = GetAsks(tokenLiquidity, ethLiquidity)
-            };
-        }
-
-        private static List<Ask> GetAsks(double tokenLiquidity, double ethLiquidity)
-        {
-            var tokenOrderSize = tokenLiquidity * 0.005;
-            var tokenOutput = tokenOrderSize;
-            var currentPriceEth = ethLiquidity / tokenLiquidity;
-
-            var asks = new List<Ask>();
-            while (tokenOutput <= tokenLiquidity)
-            {
-                //Avoid infinity
-                if (tokenOutput.ToString(DecimalFormatter) == tokenLiquidity.ToString(DecimalFormatter))
-                    tokenOutput -= tokenOrderSize * 0.01;
-
-                // Buy ERC20 with ETH
-                var numerator = tokenOutput * ethLiquidity;
-                var denominator = (tokenLiquidity - tokenOutput);
-                var ethInput = numerator / denominator + 1;
-                var priceEth = ethInput / tokenOutput;
-
-                var order = new Ask
-                {
-                    PriceEth = priceEth.ToString(DecimalFormatter),
-                    TokenAmount = tokenOrderSize.ToString(DecimalFormatter),
-                    EthValue = (tokenOrderSize * currentPriceEth).ToString(DecimalFormatter)
-                };
-                asks.Add(order);
-                tokenOutput += tokenOrderSize;
-            }
-            return asks;
-        }
-
-        private static List<Bid> GetBids(double ethLiquidity, double tokenLiquidity)
-        {
-            var ethOrderSize = ethLiquidity * 0.005;
-            var ethOutput = ethOrderSize;
-
-            var bids = new List<Bid>();
-            while (ethOutput <= ethLiquidity)
-            {
-                // Buy ETH with ERC20
-                var numerator = ethOutput * tokenLiquidity;
-                var denominator = (ethLiquidity - ethOutput);
-                var tokenInput = numerator / denominator + 1;
-                var priceEth = ethOutput / tokenInput;
-
-                var order = new Bid
-                {
-                    PriceEth = priceEth.ToString(DecimalFormatter),
-                    EthAmount = ethOrderSize.ToString(DecimalFormatter)
-                };
-                bids.Add(order);
-                ethOutput += ethOrderSize;
-            }
-            return bids;
         }
 
         private bool OrderBooksAreStale()

@@ -1,9 +1,8 @@
-﻿using System.Linq;
-using System.Security.Cryptography.X509Certificates;
+﻿using UniswapDataApi.Interfaces;
 
 namespace UniswapDataApi.Models
 {
-    public class UniswapPair
+    public class UniswapPair : IPairLiquidity
     {
         public string Pair { get; set; }
         public string Price { get; set; }
