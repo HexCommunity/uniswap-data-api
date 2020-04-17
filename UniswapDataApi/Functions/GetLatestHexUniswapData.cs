@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Numerics;
@@ -9,7 +8,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Nethereum.Contracts;
 using Nethereum.Util;
@@ -35,7 +33,7 @@ namespace UniswapDataApi.Functions
 
         private readonly Contract _hexContract;
 
-        public GetLatestHexUniswapData(IHttpClientFactory httpClientFactory, IWeb3 web3, IConfiguration config)
+        public GetLatestHexUniswapData(IHttpClientFactory httpClientFactory, IWeb3 web3)
         {
             _client = httpClientFactory.CreateClient();
             _web3 = web3;
