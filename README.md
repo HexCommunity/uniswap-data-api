@@ -9,3 +9,6 @@ Provide token ticker data in format consumable by various exchanges/sites.
 #### Uniswap Market Data
 - https://uniswapdataapi.azurewebsites.net/api/market
 - https://uniswapdataapi.azurewebsites.net/api/orderbook/hex
+
+#### HEX Market Data
+- https://uniswapdataapi.azurewebsites.net/api/hexPrice
