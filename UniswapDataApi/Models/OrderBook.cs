@@ -4,6 +4,7 @@ namespace UniswapDataApi.Models
 {
     public class OrderBook
     {
+        public long Timestamp { get; set; }
         public List<Bid> Bids { get; set; } = new List<Bid>();
         public List<Ask> Asks { get; set; } = new List<Ask>();
     }
