@@ -58,6 +58,28 @@ namespace UniswapDataApi.Functions
             }
         }
 
+        [FunctionName("cmcOrderBook")]
+        public async Task<IActionResult> CmcOrderBook(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "cmc/orderBook/{tokenSymbol}")] HttpRequest req,
+            string tokenSymbol,
+            ILogger log)
+        {
+            try
+            {
+                if (OrderBooksAreStale())
+                    await UpdateOrderBooks();
+
+                // Drop _ETH
+                _orderBooks.TryGetValue(tokenSymbol.Replace("_ETH", string.Empty).ToLower(), out var orderBook);
+                return new OkObjectResult(orderBook.ConvertToCmcFormat());
+            }
+            catch (Exception e)
+            {
+                log.LogCritical(e, $"Caught an exception while processing blocklytics <=> uniswap summary data for CMC: {e.Message}");
+                return new InternalServerErrorResult();
+            }
+        }
+
         private async Task UpdateOrderBooks()
         {
             var response = await _client.GetAsync(_getUniswapDataUri);

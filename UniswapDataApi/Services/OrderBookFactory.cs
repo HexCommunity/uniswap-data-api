@@ -21,6 +21,7 @@ namespace UniswapDataApi.Services
 
             return new OrderBook
             {
+                Timestamp = pair.Timestamp,
                 Bids = GetBids(ethLiquidity, tokenLiquidity),
                 Asks = GetAsks(tokenLiquidity, ethLiquidity)
             };

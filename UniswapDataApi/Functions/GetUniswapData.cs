@@ -105,6 +105,7 @@ namespace UniswapDataApi.Functions
                 {
                     var uniswapPair = new UniswapPair
                     {
+                        Timestamp = pair.Timestamp.ToUnixTimeMilliseconds(),
                         Pair = $"{pair.TokenSymbol}/ETH",
                         Price = (1 / (double)pair.Price).ToString(DecimalFormatter),
                         EthLiquidity = pair.EthLiquidity.ToString(DecimalFormatter),
@@ -134,6 +135,7 @@ namespace UniswapDataApi.Functions
             if (ethBalance.Equals(0) || hexBalance.Equals(0))
                 return hexPair;
 
+            hexPair.Timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
             hexPair.Price = (ethBalance / hexBalance).ToString(DecimalFormatter);
             hexPair.EthLiquidity = ethBalance.ToString(DecimalFormatter);
             hexPair.TokenLiquidity = hexBalance.ToString(DecimalFormatter);
