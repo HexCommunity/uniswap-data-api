@@ -70,7 +70,7 @@ namespace UniswapDataApi.Functions
                     await UpdateOrderBooks();
 
                 // Drop _ETH
-                _orderBooks.TryGetValue(tokenSymbol.Replace("_ETH", string.Empty).ToLower(), out var orderBook);
+                _orderBooks.TryGetValue(tokenSymbol.ToLower().Replace("_eth", string.Empty), out var orderBook);
                 return new OkObjectResult(orderBook.ConvertToCmcFormat());
             }
             catch (Exception e)
