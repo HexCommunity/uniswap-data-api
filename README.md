@@ -11,5 +11,5 @@ Provide token ticker data in format consumable by various exchanges/sites.
 - https://uniswapdataapi.azurewebsites.net/api/orderbook/hex
 - https://uniswapdataapi.azurewebsites.net/api/cmc/orderbook/HEX_ETH
 
-#### HEX Market Data
+#### HEX Market Data (References Uniswap V2 HEX/ETH, Binance ETH/BTC, and Coinbase ETH/USD)
 - https://uniswapdataapi.azurewebsites.net/api/hexPrice
